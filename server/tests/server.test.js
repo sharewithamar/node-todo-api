@@ -1,25 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
+let { todos, populateTodos, users, populateUsers } = require('./seed/seed');
+const { app } = require('./../server');
+const { Todo } = require('./../models/todo');
 
-const {app} = require('./../server');
-const {Todo} = require('./../models/todo');
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
-const todos = [{
-  _id: new ObjectID(),
-  text: 'First test todo'
-}, {
-  _id: new ObjectID(),
-  text: 'Second test todo',
-  completed: true,
-  completedAt: 333
-}];
-
-beforeEach((done) => {
-  Todo.remove({}).then(() => {
-    return Todo.insertMany(todos);
-  }).then(() => done());
-});
 
 describe('POST /todos', () => {
   it('should create a new todo', (done) => {
@@ -27,7 +15,7 @@ describe('POST /todos', () => {
 
     request(app)
       .post('/todos')
-      .send({text})
+      .send({ text })
       .expect(200)
       .expect((res) => {
         expect(res.body.text).toBe(text);
@@ -37,7 +25,7 @@ describe('POST /todos', () => {
           return done(err);
         }
 
-        Todo.find({text}).then((todos) => {
+        Todo.find({ text }).then((todos) => {
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
